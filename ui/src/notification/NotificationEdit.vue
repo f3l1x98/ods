@@ -59,7 +59,7 @@ export default class NotificationEdit extends Vue {
     pipelineId: number,
     notificationId: number,
   ): Promise<void> {
-    const notificationsOfPipeline = await NotificationREST.getAllByPipelineId(
+    const notificationsOfPipeline = await NotificationREST.getRealInstance().getAllByPipelineId(
       pipelineId,
     );
     this.notification =
@@ -71,7 +71,7 @@ export default class NotificationEdit extends Vue {
       return;
     }
 
-    await NotificationREST.update(this.notification);
+    await NotificationREST.getRealInstance().update(this.notification);
     this.$router
       .push({ name: 'notification-overview' })
       .catch(error =>
