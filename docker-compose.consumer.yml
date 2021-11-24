@@ -5,6 +5,14 @@ services:
     build:
       target: base
     command: npm run test:consumer
+    # TODO envs are not injected due to testEnv -> somehow use /ui/.env.template to populate these values (Like in Dockerfile)
+    environment:
+      VUE_APP_BASE_URL: /
+      VUE_APP_ADAPTER_SERVICE_URL: /api/adapter
+      VUE_APP_STORAGE_SERVICE_URL: /api/storage
+      VUE_APP_PIPELINE_SERVICE_URL: /api/pipelines
+      VUE_APP_NOTIFICATION_SERVICE_URL: /api/notification
+      VUE_APP_SCHEMA_SERVICE_URL: /api/schema
     volumes:
       - ./pacts:/pacts
   notification:
