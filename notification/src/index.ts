@@ -1,3 +1,5 @@
+import { Server } from 'http';
+
 import { AmqpConnection } from '@jvalue/node-dry-amqp';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -12,7 +14,8 @@ import { initNotificationRepository } from './notification-config/postgresNotifi
 import VM2SandboxExecutor from './notification-execution/condition-evaluation/vm2SandboxExecutor';
 import NotificationExecutor from './notification-execution/notificationExecutor';
 
-const port = 8080;
+export const port = 8080;
+export let server: Server | undefined;
 
 function onAmqpConnectionLoss(error: unknown): never {
   console.log('Terminating because connection to AMQP lost:', error);
@@ -62,7 +65,7 @@ async function main(): Promise<void> {
     res.send(notificationExecutor.getVersion());
   });
 
-  app.listen(port, () => {
+  server = app.listen(port, () => {
     console.log(`Listening on port ${port}`);
   });
 }

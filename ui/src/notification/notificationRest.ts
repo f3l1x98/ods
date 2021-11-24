@@ -1,4 +1,4 @@
-import axios, { AxiosInstance, AxiosResponse } from 'axios';
+import axios, { AxiosInstance } from 'axios';
 
 import { NOTIFICATION_SERVICE_URL } from '@/env';
 import NotificationConfig, {
@@ -6,7 +6,7 @@ import NotificationConfig, {
   NotificationType,
 } from '@/notification/notificationConfig';
 
-interface NotificationApiReadModel extends NotificationApiWriteModel {
+export interface NotificationApiReadModel extends NotificationApiWriteModel {
   id: number;
 }
 
