@@ -58,7 +58,7 @@ export default class NotificationCreate extends Vue {
   }
 
   private async onCreate(): Promise<void> {
-    await NotificationREST.create(this.notification);
+    await NotificationREST.getRealInstance().create(this.notification);
     this.$router
       .push({ name: 'notification-overview' })
       .catch(error =>

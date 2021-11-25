@@ -123,13 +123,13 @@ export default class PipelineNotifications extends Vue {
   private async onDeleteNotification(
     notification: NotificationConfig,
   ): Promise<void> {
-    await NotificaitonREST.remove(notification);
+    await NotificaitonREST.getRealInstance().remove(notification);
     await this.loadNotifications();
   }
 
   private async loadNotifications(): Promise<void> {
     this.isLoading = true;
-    this.notifications = await NotificaitonREST.getAllByPipelineId(
+    this.notifications = await NotificaitonREST.getRealInstance().getAllByPipelineId(
       this.pipelineId,
     );
     this.isLoading = false;

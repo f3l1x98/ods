@@ -1,3 +1,5 @@
+import { Server } from 'http';
+
 import { AmqpConnection } from '@jvalue/node-dry-amqp';
 import bodyParser from 'body-parser';
 import cors from 'cors';
@@ -8,11 +10,13 @@ import { NotificationConfigEndpoint } from './api/rest/notificationConfigEndpoin
 import { NotificationExecutionEndpoint } from './api/rest/notificationExecutionEndpoint';
 import { TriggerEventHandler } from './api/triggerEventHandler';
 import { AMQP_URL, CONNECTION_BACKOFF, CONNECTION_RETRIES } from './env';
+import { NotificationConfigManager } from './notification-config/notificationConfigManager';
 import { initNotificationRepository } from './notification-config/postgresNotificationRepository';
 import VM2SandboxExecutor from './notification-execution/condition-evaluation/vm2SandboxExecutor';
 import NotificationExecutor from './notification-execution/notificationExecutor';
 
-const port = 8080;
+export const port = 8080;
+export let server: Server | undefined;
 
 function onAmqpConnectionLoss(error: unknown): never {
   console.log('Terminating because connection to AMQP lost:', error);
@@ -24,14 +28,17 @@ async function main(): Promise<void> {
     CONNECTION_RETRIES,
     CONNECTION_BACKOFF,
   );
+  const notificationConfigManager = new NotificationConfigManager(
+    notificationRepository,
+  );
   const sandboxExecutor = new VM2SandboxExecutor();
   const notificationExecutor = new NotificationExecutor(sandboxExecutor);
   const triggerEventHandler = new TriggerEventHandler(
-    notificationRepository,
+    notificationConfigManager,
     notificationExecutor,
   );
   const notificationConfigEndpoint = new NotificationConfigEndpoint(
-    notificationRepository,
+    notificationConfigManager,
   );
   const notificationExecutionEndpoint = new NotificationExecutionEndpoint(
     triggerEventHandler,
@@ -62,7 +69,7 @@ async function main(): Promise<void> {
     res.send(notificationExecutor.getVersion());
   });
 
-  app.listen(port, () => {
+  server = app.listen(port, () => {
     console.log(`Listening on port ${port}`);
   });
 }

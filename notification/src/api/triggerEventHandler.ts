@@ -1,4 +1,4 @@
-import { NotificationRepository } from '../notification-config/notificationRepository';
+import { NotificationConfigManager } from '../notification-config/notificationConfigManager';
 import NotificationExecutor from '../notification-execution/notificationExecutor';
 
 import * as NotificationMessageFactory from './notificationMessageFactory';
@@ -11,14 +11,14 @@ const NOTIFICATION_DATA_LOCATION_URL =
   process.env.NOTIFICATION_DATA_LOCATION_URL ?? 'localhost:9000/storage';
 
 export class TriggerEventHandler {
-  notificationRepository: NotificationRepository;
+  notificationConfigManager: NotificationConfigManager;
   notificationExecutor: NotificationExecutor;
 
   constructor(
-    notificationRepository: NotificationRepository,
+    notificationConfigManager: NotificationConfigManager,
     notificationExecutor: NotificationExecutor,
   ) {
-    this.notificationRepository = notificationRepository;
+    this.notificationConfigManager = notificationConfigManager;
     this.notificationExecutor = notificationExecutor;
   }
 
@@ -40,7 +40,7 @@ export class TriggerEventHandler {
       dataLocation,
     );
     const data = transformationEvent.data;
-    const configs = await this.notificationRepository.getForPipeline(
+    const configs = await this.notificationConfigManager.getForPipeline(
       transformationEvent.pipelineId,
     );
 
