@@ -1,14 +1,17 @@
 import { RequestOptions, ResponseOptions } from '@pact-foundation/pact';
-import { eachLike } from '@pact-foundation/pact/src/dsl/matchers';
+import { eachLike, like } from '@pact-foundation/pact/src/dsl/matchers';
 
 import NotificationConfig, {
   NotificationType,
 } from './notification/notificationConfig';
 import { NotificationApiReadModel } from './notification/notificationRest';
 
+export const exampleNotificationConfigId = 1;
+export const examplePipelineId = 2;
+
 export const exampleConfig: NotificationConfig = {
-  id: 1,
-  pipelineId: 2,
+  id: exampleNotificationConfigId,
+  pipelineId: examplePipelineId,
   type: NotificationType.WEBHOOK,
   condition: 'true',
   parameters: {
@@ -61,4 +64,56 @@ export const notFoundResponse: ResponseOptions = {
 export const badRequestResponse: ResponseOptions = {
   // TODO any status code that results in throwing an error is actually acceptable (i.e. 4xx, 5xx)
   status: 400,
+};
+
+export function updateNotificationConfigRequestTitle(configId: number): string {
+  return `a request for updating a notification config with id ${configId}`;
+}
+
+export function updateNotificationConfigRequest(
+  notificationConfig: NotificationConfig,
+): RequestOptions {
+  return {
+    method: 'PUT',
+    path: `/configs/${notificationConfig.id}`,
+    headers: {
+      'Content-Type': 'application/json',
+    },
+    body: {
+      pipelineId: notificationConfig.pipelineId,
+      type: notificationConfig.type,
+      condition: notificationConfig.condition,
+      parameter: notificationConfig.parameters,
+    },
+  };
+}
+
+export const getByIdSuccessResponse: ResponseOptions = {
+  // TODO any success status code is actually acceptable (i.e. 2xx)
+  status: 200,
+  headers: {
+    'Content-Type': 'application/json; charset=utf-8',
+  },
+  body: like(exampleApiModelConfig),
+};
+
+export function deleteRequestTitle(id: number): string {
+  return `a request for deleting the notification config with id ${id}`;
+}
+
+export function deleteRequest(id: number): RequestOptions {
+  return {
+    method: 'DELETE',
+    path: `/configs/${id}`,
+  };
+}
+
+export const deleteSuccessResponse: ResponseOptions = {
+  // TODO any success status code is actually acceptable (i.e. 2xx)
+  status: 200,
+};
+
+export const updateSuccessResponse: ResponseOptions = {
+  // TODO any success status code is actually acceptable (i.e. 2xx)
+  status: 200,
 };

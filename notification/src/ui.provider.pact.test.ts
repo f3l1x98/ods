@@ -13,9 +13,9 @@ import { port, server } from './index'; // The main method is automatically call
 const notificationConfigs: NotificationBase[] = [];
 let nextNotificationConfigId: number;
 
-jest.mock('./notification-config/notificationRepository', () => {
+jest.mock('./notification-config/notificationConfigManager', () => {
   return {
-    NotificationRepository: jest.fn().mockImplementation(() => {
+    NotificationConfigManager: jest.fn().mockImplementation(() => {
       return {
         getAll: jest.fn().mockResolvedValue(notificationConfigs),
 
@@ -58,7 +58,7 @@ jest.mock('./notification-config/notificationRepository', () => {
 // The following mocks are needed for propper execution of the main function
 jest.mock('./notification-config/postgresNotificationRepository', () => {
   return {
-    init: jest.fn(),
+    initNotificationRepository: jest.fn(),
   };
 });
 jest.mock('@jvalue/node-dry-amqp', () => {
@@ -86,6 +86,8 @@ describe('Pact Provider Verification', () => {
         'notification configs with pipelineId 2 exists':
           setupSomeNotificationConfigs,
         'no notification configs with pipelineId 2 exists': setupEmptyState,
+        'notification config with id 1 exist': setupSomeNotificationConfigs,
+        'notification config with id 1 does not exist': setupEmptyState,
       },
     });
     await verifier.verifyProvider().finally(() => {

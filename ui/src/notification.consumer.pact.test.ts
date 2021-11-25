@@ -4,11 +4,19 @@ import { JestPactOptions, pactWith } from 'jest-pact';
 
 import {
   badRequestResponse,
+  deleteRequest,
+  deleteRequestTitle,
+  deleteSuccessResponse,
   exampleConfig,
+  examplePipelineId,
   getByPipelineIdEmptyResponse,
   getByPipelineIdRequest,
   getByPipelineIdRequestTitle,
   getByPipelineIdSuccessResponse,
+  notFoundResponse,
+  updateNotificationConfigRequest,
+  updateNotificationConfigRequestTitle,
+  updateSuccessResponse,
 } from './notification.consumer.pact.fixtures';
 import { NotificationRest } from './notification/notificationRest';
 
@@ -31,7 +39,7 @@ pactWith(options, provider => {
 
     describe('getting all notification configs by pipelineId', () => {
       describe('when some notification configs with requested pipelineId exists', () => {
-        const id = exampleConfig.pipelineId;
+        const id = examplePipelineId;
 
         beforeEach(async () => {
           await provider.addInteraction({
@@ -50,7 +58,7 @@ pactWith(options, provider => {
       });
 
       describe('when no notification configs with requested pipelineId exists', () => {
-        const id = exampleConfig.pipelineId;
+        const id = examplePipelineId;
 
         beforeEach(async () => {
           await provider.addInteraction({
@@ -87,45 +95,123 @@ pactWith(options, provider => {
     });
 
     describe('updateing a notification config', () => {
-      describe('TODO 2', () => {
-        /* BeforeEach(async () => {
+      describe('when notification config with requested id exist', () => {
+        const updatedConfig = exampleConfig;
+
+        beforeEach(async () => {
           await provider.addInteraction({
-            state: 'some pipelines exist',
-            uponReceiving: getAllRequestTitle,
-            withRequest: getAllRequest,
-            willRespondWith: getAllSuccessResponse,
+            state: `notification config with id ${updatedConfig.id} exist`,
+            uponReceiving: updateNotificationConfigRequestTitle(
+              updatedConfig.id,
+            ),
+            withRequest: updateNotificationConfigRequest(updatedConfig),
+            willRespondWith: updateSuccessResponse,
           });
         });
 
-        it('returns a non-empty pipeline array', async () => {
-          const pipelines = await restService.getAllPipelines();
+        it('succeeds', async () => {
+          await restService.update(updatedConfig);
+        });
+      });
 
-          expect(pipelines).toStrictEqual([examplePipeline]);
-        });*/
-        it('Empty', () => {
-          console.log('TODO');
+      describe('when notification config with requested id does not exist', () => {
+        const updatedConfig = exampleConfig;
+
+        beforeEach(async () => {
+          await provider.addInteraction({
+            state: `notification config with id ${updatedConfig.id} does not exist`,
+            uponReceiving: updateNotificationConfigRequestTitle(
+              updatedConfig.id,
+            ),
+            withRequest: updateNotificationConfigRequest(updatedConfig),
+            willRespondWith: notFoundResponse,
+          });
+        });
+
+        it('throws an error', async () => {
+          await expect(restService.update(updatedConfig)).rejects.toThrow(
+            Error,
+          );
+        });
+      });
+
+      describe('with NaN as notification config id', () => {
+        const updatedConfig = {
+          ...exampleConfig,
+          id: NaN,
+        };
+
+        beforeEach(async () => {
+          await provider.addInteraction({
+            state: 'any state',
+            uponReceiving: updateNotificationConfigRequestTitle(
+              updatedConfig.id,
+            ),
+            withRequest: updateNotificationConfigRequest(updatedConfig),
+            willRespondWith: badRequestResponse,
+          });
+        });
+
+        it('throws an error', async () => {
+          await expect(restService.update(updatedConfig)).rejects.toThrow(
+            Error,
+          );
         });
       });
     });
 
     describe('deleting a notification config', () => {
-      describe('TODO 2', () => {
-        /* BeforeEach(async () => {
+      describe('when notification config with requested id exist', () => {
+        const removeConfig = exampleConfig;
+
+        beforeEach(async () => {
           await provider.addInteraction({
-            state: 'some pipelines exist',
-            uponReceiving: getAllRequestTitle,
-            withRequest: getAllRequest,
-            willRespondWith: getAllSuccessResponse,
+            state: `notification config with id ${removeConfig.id} exist`,
+            uponReceiving: deleteRequestTitle(removeConfig.id),
+            withRequest: deleteRequest(removeConfig.id),
+            willRespondWith: deleteSuccessResponse,
           });
         });
 
-        it('returns a non-empty pipeline array', async () => {
-          const pipelines = await restService.getAllPipelines();
+        it('succeeds', async () => {
+          await restService.remove(removeConfig);
+        });
+      });
 
-          expect(pipelines).toStrictEqual([examplePipeline]);
-        });*/
-        it('Empty', () => {
-          console.log('TODO');
+      describe('when notification config with requested id does not exist', () => {
+        const removeConfig = exampleConfig;
+
+        beforeEach(async () => {
+          await provider.addInteraction({
+            state: `notification config with id ${removeConfig.id} does not exist`,
+            uponReceiving: deleteRequestTitle(removeConfig.id),
+            withRequest: deleteRequest(removeConfig.id),
+            willRespondWith: deleteSuccessResponse,
+          });
+        });
+
+        it('succeeds', async () => {
+          await restService.remove(removeConfig);
+        });
+      });
+
+      describe('with NaN as notification config id', () => {
+        const removeConfig = {
+          ...exampleConfig,
+          id: NaN,
+        };
+
+        beforeEach(async () => {
+          await provider.addInteraction({
+            state: 'any state',
+            uponReceiving: deleteRequestTitle(removeConfig.id),
+            withRequest: deleteRequest(removeConfig.id),
+            willRespondWith: badRequestResponse,
+          });
+        });
+
+        it('throws an error', async () => {
+          await expect(restService.remove(removeConfig)).rejects.toThrow(Error);
         });
       });
     });
