@@ -6,7 +6,7 @@ import { JestMessageConsumerOptions, messagePactWith } from 'jest-pact';
 
 import { PipelineSuccessEvent } from './api/pipelineEvent';
 import { TriggerEventHandler } from './api/triggerEventHandler';
-import { NotificationConfigManager } from './notification-config/notificationConfigManager';
+import { PostgresNotificationRepository } from './notification-config/postgresNotificationRepository';
 import NotificationExecutor from './notification-execution/notificationExecutor';
 
 const pactsDir = path.resolve(process.cwd(), '..', 'pacts');
@@ -39,17 +39,17 @@ const examplePipelineSuccessEventWithSchema: PipelineSuccessEvent = {
 
 jest.mock('./env', () => ({}));
 
-jest.mock('./notification-config/notificationConfigManager', () => {
+jest.mock('./notification-config/postgresNotificationRepository', () => {
   return {
-    NotificationConfigManager: jest.fn().mockImplementation(() => {
+    PostgresNotificationRepository: jest.fn().mockImplementation(() => {
       return {
         getForPipeline: jest.fn().mockResolvedValue([]),
       };
     }),
   };
 });
-const mockNotificationConfigManager =
-  NotificationConfigManager as jest.Mock<NotificationConfigManager>;
+const mockPostgresNotificationRepository =
+  PostgresNotificationRepository as jest.Mock<PostgresNotificationRepository>;
 
 jest.mock('./notification-execution/notificationExecutor');
 const mockNotificationExecutor =
@@ -57,9 +57,8 @@ const mockNotificationExecutor =
 
 messagePactWith(options, (messagePact) => {
   describe('receiving an amqp message', () => {
-    // TODO somehow get mockNotificationConfigManager working (requires constructor param -> jest fails)
     const triggerEventHandler = new TriggerEventHandler(
-      mockNotificationConfigManager(),
+      mockPostgresNotificationRepository(),
       mockNotificationExecutor(),
     );
 

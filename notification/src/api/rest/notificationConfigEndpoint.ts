@@ -4,12 +4,12 @@ import {
   NotificationConfig,
   isValidNotificationConfig,
 } from '../../notification-config/notificationConfig';
-import { NotificationConfigManager } from '../../notification-config/notificationConfigManager';
+import { NotificationRepository } from '../../notification-config/notificationRepository';
 
 import { asyncHandler } from './utils';
 
 export class NotificationConfigEndpoint {
-  constructor(private readonly configHandler: NotificationConfigManager) {}
+  constructor(private readonly storageHandler: NotificationRepository) {}
 
   registerRoutes = (app: express.Application): void => {
     app.post('/configs', asyncHandler(this.handleConfigCreation));
@@ -34,7 +34,7 @@ export class NotificationConfigEndpoint {
     }
 
     // Get configs from database
-    const configs = await this.configHandler.getForPipeline(pipelineId);
+    const configs = await this.storageHandler.getForPipeline(pipelineId);
     res.status(200).send(configs);
   };
 
@@ -46,7 +46,7 @@ export class NotificationConfigEndpoint {
       return await this.handleConfigsByPipelineRetrieve(req, res);
     }
 
-    const configs = await this.configHandler.getAll();
+    const configs = await this.storageHandler.getAll();
     res.status(200).send(configs);
   };
 
@@ -64,7 +64,7 @@ export class NotificationConfigEndpoint {
     }
 
     try {
-      const config = await this.configHandler.getById(id);
+      const config = await this.storageHandler.getById(id);
       if (config === undefined) {
         res.status(404).send();
         return;
@@ -92,7 +92,7 @@ export class NotificationConfigEndpoint {
     }
 
     try {
-      const savedConfig = await this.configHandler.create(config);
+      const savedConfig = await this.storageHandler.create(config);
       res.status(201).send(savedConfig);
     } catch (error) {
       console.error(`Could not create webhookConfig Object: `, error);
@@ -115,7 +115,7 @@ export class NotificationConfigEndpoint {
     }
 
     // Delete Config
-    await this.configHandler.delete(configId);
+    await this.storageHandler.delete(configId);
     res.status(200).send('DELETED');
   };
 
@@ -142,10 +142,8 @@ export class NotificationConfigEndpoint {
     }
 
     try {
-      const updatedConfig: NotificationConfig = await this.configHandler.update(
-        id,
-        config,
-      );
+      const updatedConfig: NotificationConfig =
+        await this.storageHandler.update(id, config);
       res.status(200).send(updatedConfig);
     } catch (e) {
       res.status(404).send(`Could not find config with id ${id}`);

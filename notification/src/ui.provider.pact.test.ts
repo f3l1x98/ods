@@ -7,17 +7,20 @@ import {
   NotificationType,
   WebhookNotification,
 } from './notification-config/notificationConfig';
+import { PostgresNotificationRepository } from './notification-config/postgresNotificationRepository';
 
 import { port, server } from './index'; // The main method is automatically called due to this import
 
 const notificationConfigs: NotificationBase[] = [];
 let nextNotificationConfigId: number;
 
-jest.mock('./notification-config/notificationConfigManager', () => {
+jest.mock('./notification-config/postgresNotificationRepository', () => {
   return {
-    NotificationConfigManager: jest.fn().mockImplementation(() => {
+    PostgresNotificationRepository: jest.fn().mockImplementation(() => {
       return {
-        getAll: jest.fn().mockResolvedValue(notificationConfigs),
+        getAll: jest
+          .fn()
+          .mockImplementation(() => Promise.resolve(notificationConfigs)),
 
         getById: jest.fn().mockImplementation(async (id: number) => {
           const result = notificationConfigs.find((config) => config.id === id);
@@ -52,15 +55,14 @@ jest.mock('./notification-config/notificationConfigManager', () => {
         }),
       };
     }),
+
+    initNotificationRepository: jest.fn().mockImplementation(() => {
+      return Promise.resolve(new PostgresNotificationRepository());
+    }),
   };
 });
 
 // The following mocks are needed for propper execution of the main function
-jest.mock('./notification-config/postgresNotificationRepository', () => {
-  return {
-    initNotificationRepository: jest.fn(),
-  };
-});
 jest.mock('@jvalue/node-dry-amqp', () => {
   return {
     AmqpConnection: jest.fn(),
